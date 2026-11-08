@@ -2,32 +2,47 @@
 <html lang="de">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b6e74">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="HörWin">
+  <meta name="format-detection" content="telephone=no">
   <title>{% block titel %}HörWin{% endblock %} · {{ firma('firma_name') or 'HörWin' }}</title>
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icon.svg') }}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon-180.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 {% if g.benutzer %}
-<header class="kopf">
+{% set ep = request.endpoint or '' %}
+<header class="kopf" id="kopf">
   <a class="logo" href="{{ url_for('dashboard.index') }}">Hör<b>Win</b></a>
-  <nav>
-    {% set ep = request.endpoint or '' %}
-    <a href="{{ url_for('dashboard.index') }}" class="{{ 'aktiv' if ep.startswith('dashboard') }}">Übersicht</a>
-    <a href="{{ url_for('kunden.liste') }}" class="{{ 'aktiv' if ep.startswith('kunden') }}">Kunden</a>
-    <a href="{{ url_for('termine.woche') }}" class="{{ 'aktiv' if ep.startswith('termine') }}">Termine</a>
-    <a href="{{ url_for('versorgungen.liste') }}" class="{{ 'aktiv' if ep.startswith('versorgungen') }}">Versorgungen</a>
-    <a href="{{ url_for('rechnungen.liste') }}" class="{{ 'aktiv' if ep.startswith('rechnungen') }}">Rechnungen</a>
-    <a href="{{ url_for('reparaturen.liste') }}" class="{{ 'aktiv' if ep.startswith('reparaturen') }}">Reparaturen</a>
-    <a href="{{ url_for('artikel.liste') }}" class="{{ 'aktiv' if ep.startswith('artikel') }}">Artikel &amp; Lager</a>
-    <a href="{{ url_for('kassen.liste') }}" class="{{ 'aktiv' if ep.startswith('kassen') }}">Kostenträger</a>
-  </nav>
-  <div class="benutzer">
-    <form class="suche-schnell" action="{{ url_for('kunden.liste') }}"><input name="q" placeholder="Kunde suchen…" aria-label="Kunde suchen"></form>
-    <a href="{{ url_for('einstellungen.index') }}" title="Einstellungen">⚙</a>
-    <form method="post" action="{{ url_for('auth.logout') }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button class="link" title="Abmelden">{{ g.benutzer['name'] }} ⎋</button>
-    </form>
+  <button type="button" class="menue-knopf" aria-controls="menue" aria-expanded="false"
+          onclick="var o=document.getElementById('kopf').classList.toggle('offen'); this.setAttribute('aria-expanded', o)">
+    <span></span><span></span><span></span><span class="unsichtbar">Menü</span>
+  </button>
+  <div class="menue" id="menue">
+    <form class="suche-schnell" action="{{ url_for('kunden.liste') }}"><input type="search" name="q" placeholder="Kunde suchen…" aria-label="Kunde suchen"></form>
+    <nav>
+      <a href="{{ url_for('dashboard.index') }}" class="{{ 'aktiv' if ep.startswith('dashboard') }}">Übersicht</a>
+      <a href="{{ url_for('kunden.liste') }}" class="{{ 'aktiv' if ep.startswith('kunden') }}">Kunden</a>
+      <a href="{{ url_for('termine.woche') }}" class="{{ 'aktiv' if ep.startswith('termine') }}">Termine</a>
+      <a href="{{ url_for('versorgungen.liste') }}" class="{{ 'aktiv' if ep.startswith('versorgungen') }}">Versorgungen</a>
+      <a href="{{ url_for('rechnungen.liste') }}" class="{{ 'aktiv' if ep.startswith('rechnungen') }}">Rechnungen</a>
+      <a href="{{ url_for('reparaturen.liste') }}" class="{{ 'aktiv' if ep.startswith('reparaturen') }}">Reparaturen</a>
+      <a href="{{ url_for('artikel.liste') }}" class="{{ 'aktiv' if ep.startswith('artikel') }}">Artikel &amp; Lager</a>
+      <a href="{{ url_for('kassen.liste') }}" class="{{ 'aktiv' if ep.startswith('kassen') }}">Kostenträger</a>
+    </nav>
+    <div class="benutzer">
+      <a href="{{ url_for('einstellungen.index') }}" title="Einstellungen">⚙<span class="nur-mobil"> Einstellungen</span></a>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="link" title="Abmelden">{{ g.benutzer['name'] }} ⎋<span class="nur-mobil"> Abmelden</span></button>
+      </form>
+    </div>
   </div>
 </header>
 {% endif %}
@@ -37,5 +52,27 @@
   {% endwith %}
   {% block inhalt %}{% endblock %}
 </main>
+{% if g.benutzer %}
+<nav class="tabbar" aria-label="Schnellzugriff">
+  <a href="{{ url_for('dashboard.index') }}" class="{{ 'aktiv' if ep.startswith('dashboard') }}"><span>⌂</span>Übersicht</a>
+  <a href="{{ url_for('kunden.liste') }}" class="{{ 'aktiv' if ep.startswith('kunden') }}"><span>👤</span>Kunden</a>
+  <a href="{{ url_for('termine.woche') }}" class="{{ 'aktiv' if ep.startswith('termine') }}"><span>📅</span>Termine</a>
+  <a href="{{ url_for('versorgungen.liste') }}" class="{{ 'aktiv' if ep.startswith('versorgungen') }}"><span>🦻</span>Versorgung</a>
+  <a href="{{ url_for('rechnungen.liste') }}" class="{{ 'aktiv' if ep.startswith('rechnungen') }}"><span>€</span>Rechnung</a>
+</nav>
+{% endif %}
+<script>
+  // Tabellen: Spaltenüberschrift an jede Zelle hängen, damit sie mobil als Karte mit Beschriftung erscheint.
+  document.querySelectorAll('table.tabelle:not(.kein-stapel)').forEach(function (t) {
+    var kopf = Array.prototype.map.call(t.querySelectorAll('thead th'), function (th) { return th.textContent.trim(); });
+    t.querySelectorAll('tbody tr, tfoot tr').forEach(function (tr) {
+      var i = 0;
+      Array.prototype.forEach.call(tr.children, function (td) {
+        if (td.colSpan === 1 && kopf[i] && !td.hasAttribute('data-label')) td.setAttribute('data-label', kopf[i]);
+        i += td.colSpan || 1;
+      });
+    });
+  });
+</script>
 </body>
 </html>

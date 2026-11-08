@@ -15,7 +15,7 @@
   </div>
   <p class="leise">Hörschwellen in dB HL (−10 bis 120). Leere Felder werden nicht gemessen.</p>
   <div class="scroll">
-  <table class="tabelle audiogramm-eingabe">
+  <table class="tabelle kein-stapel audiogramm-eingabe">
     <thead><tr><th></th>{% for f in frequenzen %}<th>{{ f }}</th>{% endfor %}</tr></thead>
     <tbody>
     {% for kurve, label in kurven.items() %}

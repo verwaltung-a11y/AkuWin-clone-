@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_makros.html" import csrf, status_marke, loeschen %}
+{% from "_makros.html" import csrf, status_marke, loeschen, tel %}
 {% block titel %}{{ k.nachname }}, {{ k.vorname }}{% endblock %}
 {% block inhalt %}
 <div class="titelzeile">
@@ -21,7 +21,7 @@
     <dl class="daten">
       <dt>Geburtsdatum</dt><dd>{{ k.geburtsdatum|datum }}{% if alter is not none %} ({{ alter }} Jahre){% endif %}</dd>
       <dt>Anschrift</dt><dd>{{ k.strasse or '' }}<br>{{ k.plz or '' }} {{ k.ort or '' }}</dd>
-      <dt>Telefon</dt><dd>{{ k.telefon or '' }}{% if k.mobil %}<br>{{ k.mobil }}{% endif %}</dd>
+      <dt>Telefon</dt><dd>{{ tel(k.telefon, False) }}{% if k.mobil %}<br>{{ tel(k.mobil, False) }}{% endif %}</dd>
       <dt>E-Mail</dt><dd>{% if k.email %}<a href="mailto:{{ k.email }}">{{ k.email }}</a>{% endif %}</dd>
       <dt>Kostenträger</dt><dd>{{ k.kasse or '–' }}{% if k.kasse_art %} <span class="leise">({{ k.kasse_art }})</span>{% endif %}</dd>
       <dt>Versichertennr.</dt><dd>{{ k.versichertennummer or '' }}</dd>

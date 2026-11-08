@@ -15,4 +15,6 @@
 <span class="marke {{ klassen.get(text, '') }}">{{ text }}</span>
 {% endmacro %}
 
+{% macro tel(nummer, symbol=True) %}{% if nummer %}<a class="tel" href="tel:{{ nummer|replace(' ', '')|replace('/', '')|replace('-', '') }}" onclick="event.stopPropagation()">{{ '☎ ' if symbol }}{{ nummer }}</a>{% endif %}{% endmacro %}
+
 {% macro kundenname(r) %}{{ r['nachname'] }}{% if r['vorname'] %}, {{ r['vorname'] }}{% endif %}{% endmacro %}

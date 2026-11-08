@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_makros.html" import tel %}
 {% block titel %}Kunden{% endblock %}
 {% block inhalt %}
 <div class="titelzeile">
@@ -10,14 +11,14 @@
 </div>
 <div class="karte">
 <table class="tabelle">
-  <thead><tr><th>Nr.</th><th>Name</th><th>Geburtsdatum</th><th>Ort</th><th>Telefon</th><th>Kostenträger</th></tr></thead>
+  <thead><tr><th>Name</th><th>Nr.</th><th>Geburtsdatum</th><th>Ort</th><th>Telefon</th><th>Kostenträger</th></tr></thead>
   <tbody>
   {% for k in rows %}
     <tr class="klickbar" onclick="location.href='{{ url_for('kunden.detail', kid=k.id) }}'">
-      <td>{{ k.kundennummer }}</td>
       <td><a href="{{ url_for('kunden.detail', kid=k.id) }}">{{ k.nachname }}{% if k.vorname %}, {{ k.vorname }}{% endif %}</a></td>
+      <td>{{ k.kundennummer }}</td>
       <td>{{ k.geburtsdatum|datum }}</td><td>{{ k.plz or '' }} {{ k.ort or '' }}</td>
-      <td>{{ k.telefon or k.mobil or '' }}</td><td>{{ k.kasse or '' }}</td>
+      <td>{{ tel(k.telefon or k.mobil, False) }}</td><td>{{ k.kasse or '' }}</td>
     </tr>
   {% else %}
     <tr><td colspan="6" class="leise">Keine Kunden gefunden.</td></tr>

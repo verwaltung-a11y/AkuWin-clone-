@@ -39,6 +39,18 @@ python beispieldaten.py
 Für den Zugriff von anderen Rechnern im Geschäftsnetz: `HOERWIN_HOST=0.0.0.0 python run.py`
 (Port mit `HOERWIN_PORT` änderbar). Dann unbedingt hinter HTTPS (z. B. Reverse-Proxy) betreiben.
 
+## Nutzung auf Smartphone & Tablet
+
+Die Oberfläche passt sich automatisch an kleine Bildschirme an: Menü-Button, untere Schnellleiste
+(Übersicht, Kunden, Termine, Versorgung, Rechnung), Tabellen als Karten, anklickbare Telefonnummern,
+wischbare Audiogramm-Eingabe und Druckansichten im Handyformat.
+
+1. HörWin im Geschäftsnetz erreichbar starten: `HOERWIN_HOST=0.0.0.0 python run.py`
+2. Auf dem Handy (im selben WLAN) `http://<IP-des-PCs>:5000` öffnen.
+3. „Zum Home-Bildschirm hinzufügen“ (iPhone: Teilen-Menü · Android: ⋮-Menü) – HörWin startet dann wie eine App.
+
+Für den produktiven Einsatz bitte HTTPS verwenden (z. B. Reverse-Proxy) und das Programm nicht direkt ins Internet stellen.
+
 ## Daten & Datenschutz
 
 * Alle Daten liegen in `instance/hoerwin.sqlite`. Sicherungen über ⚙ Einstellungen → „Sicherung herunterladen“

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_makros.html" import status_marke, kundenname %}
+{% from "_makros.html" import status_marke, kundenname, tel %}
 {% block titel %}Reparaturen{% endblock %}
 {% block inhalt %}
 <div class="titelzeile">
@@ -16,7 +16,7 @@
   <tbody>
   {% for r in rows %}
     <tr><td><a href="{{ url_for('reparaturen.bearbeiten', rid=r.id) }}">{{ r.eingang|datum }}</a></td>
-      <td><a href="{{ url_for('kunden.detail', kid=r.kunde_id) }}">{{ kundenname(r) }}</a>{% if r.telefon %}<br><small class="leise">☎ {{ r.telefon }}</small>{% endif %}</td>
+      <td><a href="{{ url_for('kunden.detail', kid=r.kunde_id) }}">{{ kundenname(r) }}</a>{% if r.telefon %}<br><small>{{ tel(r.telefon) }}</small>{% endif %}</td>
       <td>{{ r.geraet }}{% if r.garantie %} <span class="marke blau">Garantie</span>{% endif %}</td><td>{{ r.seriennummer or '' }}</td>
       <td>{{ (r.fehler or '')|truncate(60) }}</td><td>{{ status_marke(r.status) }}</td>
       <td class="rechts">{{ r.eingang|tage_seit if r.status in offen else '' }}</td></tr>

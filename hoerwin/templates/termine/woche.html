@@ -13,7 +13,7 @@
 </div>
 <div class="woche">
   {% for t in tage %}
-  <section class="karte tag {{ 'heute' if t.datum.isoformat() == heute }}">
+  <section class="karte tag {{ 'heute' if t.datum.isoformat() == heute }} {{ 'leer' if not t.termine }}">
     <h3>{{ t.name }} <span class="leise">{{ t.datum.strftime('%d.%m.') }}</span>
       <a class="plus" href="{{ url_for('termine.neu', tag=t.datum.isoformat()) }}" title="Termin anlegen">+</a></h3>
     {% for x in t.termine %}

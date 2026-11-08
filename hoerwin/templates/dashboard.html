@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_makros.html" import status_marke, kundenname %}
+{% from "_makros.html" import status_marke, kundenname, tel %}
 {% block titel %}Übersicht{% endblock %}
 {% block inhalt %}
 <div class="titelzeile">
@@ -27,7 +27,7 @@
       <div class="zeile {{ 'erledigt' if t.erledigt }}">
         <b>{{ t.beginn|uhrzeit }}</b> {{ t.art }} –
         {% if t.kunde_id %}<a href="{{ url_for('kunden.detail', kid=t.kunde_id) }}">{{ kundenname(t) }}</a>{% else %}<i>ohne Kunde</i>{% endif %}
-        {% if t.telefon %}<span class="leise">☎ {{ t.telefon }}</span>{% endif %}
+        {{ tel(t.telefon) }}
         {% if t.notiz %}<div class="leise">{{ t.notiz }}</div>{% endif %}
       </div>
     {% else %}<p class="leise">Keine Termine heute.</p>{% endfor %}
@@ -82,7 +82,7 @@
     <p class="leise">Letzte Abgabe liegt {{ jahre }} Jahre oder länger zurück.</p>
     {% for k in folgeversorgung %}
       <div class="zeile"><a href="{{ url_for('kunden.detail', kid=k.id) }}">{{ kundenname(k) }}</a>
-        <span class="leise">Abgabe {{ k.letzte|datum }}{% if k.telefon %} · ☎ {{ k.telefon }}{% endif %}</span></div>
+        <span class="leise">Abgabe {{ k.letzte|datum }}</span> {{ tel(k.telefon) }}</div>
     {% endfor %}
   </section>
   {% endif %}
