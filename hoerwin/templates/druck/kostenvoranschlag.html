@@ -1,0 +1,47 @@
+{% extends "druck/_basis.html" %}
+{% block titel %}Kostenvoranschlag {{ v.nachname }}{% endblock %}
+{% block inhalt %}
+<div class="anschrift">
+  {% if kasse %}{{ kasse.name }}<br>{{ kasse.strasse or '' }}<br>{{ kasse.plz or '' }} {{ kasse.ort or '' }}
+  {% else %}{{ v.anrede or '' }} {{ v.vorname or '' }} {{ v.nachname }}<br>{{ v.strasse or '' }}<br>{{ v.plz or '' }} {{ v.ort or '' }}{% endif %}
+</div>
+<div class="meta">
+  <table>
+    <tr><td>Datum</td><td>{{ heute|datum }}</td></tr>
+    <tr><td>Versicherte/r</td><td>{{ v.vorname or '' }} {{ v.nachname }}</td></tr>
+    <tr><td>Geburtsdatum</td><td>{{ v.geburtsdatum|datum }}</td></tr>
+    <tr><td>Versichertennr.</td><td>{{ v.versichertennummer or '' }}</td></tr>
+    {% if kasse and kasse.ik_nummer %}<tr><td>IK Kostenträger</td><td>{{ kasse.ik_nummer }}</td></tr>{% endif %}
+  </table>
+</div>
+<h1>Kostenvoranschlag Hörsystemversorgung ({{ v.seite }})</h1>
+<p>
+  {% if v.verordnung_datum %}Ohrenärztliche Verordnung vom {{ v.verordnung_datum|datum }}{% if v.verordnender_arzt %}, {{ v.verordnender_arzt }}{% endif %}.<br>{% endif %}
+  {% if audiogramm %}Tonaudiogramm vom {{ audiogramm.datum|datum }}:
+    {% for s in ('rechts', 'links') %}{% if auswertung[s].pta4 is not none %}{{ s }} {{ '%.0f'|format(auswertung[s].pta4) }} dB HL ({{ auswertung[s].grad }}){{ '; ' if loop.first }}{% endif %}{% endfor %}
+    {% if audiogramm.sprachverstehen_r is not none or audiogramm.sprachverstehen_l is not none %}<br>Sprachverstehen bei 65 dB: rechts {{ audiogramm.sprachverstehen_r if audiogramm.sprachverstehen_r is not none else '–' }} %, links {{ audiogramm.sprachverstehen_l if audiogramm.sprachverstehen_l is not none else '–' }} %{% endif %}
+  {% endif %}
+</p>
+<table class="posten">
+  <thead><tr><th>Hörsystem</th><th>Seite</th><th>Hilfsmittelnr.</th><th class="r">Abgabepreis</th><th class="r">Kostenträger</th><th class="r">Zuzahlung</th><th class="r">Eigenanteil</th></tr></thead>
+  <tbody>
+  {% for z in b.zeilen %}{% set g = z.geraet %}
+    <tr><td>{{ g.bezeichnung }}</td><td>{{ g.seite or '' }}</td><td>{{ g.hilfsmittelnummer or '' }}</td><td class="r">{{ z.preis|euro }}</td>
+      <td class="r">{{ z.kasse|euro }}</td><td class="r">{{ z.zuzahlung|euro }}</td><td class="r">{{ z.eigenanteil|euro }}</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr class="summe"><td colspan="3">Summe</td><td class="r">{{ b.summe.preis|euro }}</td><td class="r">{{ b.summe.kasse|euro }}</td>
+    <td class="r">{{ b.summe.zuzahlung|euro }}</td><td class="r">{{ b.summe.eigenanteil|euro }}</td></tr></tfoot>
+</table>
+<p>Alle Preise inkl. gesetzlicher MwSt. Wir bitten um Kostenübernahme in Höhe von <b>{{ b.summe.kasse|euro }}</b>
+  (Festbetrag/Vertragspreis abzgl. gesetzlicher Zuzahlung).</p>
+{% if b.summe.eigenanteil > 0 %}
+<div class="erklaerung">
+  <b>Erklärung zur Mehrkostenvereinbarung</b><br>
+  Ich wurde über eine aufzahlungsfreie Versorgung informiert, habe diese ausprobiert und wünsche mich dennoch für
+  die oben genannte Versorgung mit Mehrkosten von {{ b.summe.eigenanteil|euro }} zu entscheiden.
+  <div class="unterschriften"><span>Ort, Datum</span><span>Unterschrift Versicherte/r</span></div>
+</div>
+{% endif %}
+<div class="unterschriften"><span>Ort, Datum</span><span>Stempel / Unterschrift Hörakustiker/in</span></div>
+{% endblock %}

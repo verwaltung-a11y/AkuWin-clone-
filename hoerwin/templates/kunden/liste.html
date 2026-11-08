@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block titel %}Kunden{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Kunden</h1>
+  <div class="aktionen">
+    <form class="suche"><input name="q" value="{{ q }}" placeholder="Name, Kundennr., Ort, Telefon…" autofocus><button class="knopf">Suchen</button></form>
+    <a class="knopf primaer" href="{{ url_for('kunden.neu') }}">+ Neuer Kunde</a>
+  </div>
+</div>
+<div class="karte">
+<table class="tabelle">
+  <thead><tr><th>Nr.</th><th>Name</th><th>Geburtsdatum</th><th>Ort</th><th>Telefon</th><th>Kostenträger</th></tr></thead>
+  <tbody>
+  {% for k in rows %}
+    <tr class="klickbar" onclick="location.href='{{ url_for('kunden.detail', kid=k.id) }}'">
+      <td>{{ k.kundennummer }}</td>
+      <td><a href="{{ url_for('kunden.detail', kid=k.id) }}">{{ k.nachname }}{% if k.vorname %}, {{ k.vorname }}{% endif %}</a></td>
+      <td>{{ k.geburtsdatum|datum }}</td><td>{{ k.plz or '' }} {{ k.ort or '' }}</td>
+      <td>{{ k.telefon or k.mobil or '' }}</td><td>{{ k.kasse or '' }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="6" class="leise">Keine Kunden gefunden.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

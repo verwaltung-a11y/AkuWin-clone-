@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf, status_marke, loeschen %}
+{% block titel %}Versorgung {{ v.nachname }}{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Versorgung – <a href="{{ url_for('kunden.detail', kid=v.kunde_id) }}">{{ v.vorname or '' }} {{ v.nachname }}</a> {{ status_marke(v.status) }}</h1>
+  <div class="aktionen">
+    <a class="knopf" href="{{ url_for('versorgungen.bearbeiten', vid=v.id) }}">Bearbeiten</a>
+    <a class="knopf" href="{{ url_for('versorgungen.kostenvoranschlag', vid=v.id) }}" target="_blank">Kostenvoranschlag drucken</a>
+  </div>
+</div>
+
+<div class="karte schritte">
+  {% for s in alle_status %}
+    <form method="post" action="{{ url_for('versorgungen.status', vid=v.id) }}" class="inline">{{ csrf() }}
+      <button name="status" value="{{ s }}" class="schritt {{ 'aktuell' if s == v.status }}"
+        {% if s == 'Abgegeben' and not v.lager_gebucht %}onclick="return confirm('Abgabe buchen? Der Lagerbestand der Geräte wird reduziert und ein Nachsorgetermin vorgemerkt.')"{% endif %}>{{ s }}</button>
+    </form>
+  {% endfor %}
+</div>
+
+<div class="spalten">
+  <section class="karte">
+    <h2>Daten</h2>
+    <dl class="daten">
+      <dt>Versorgung</dt><dd>{{ v.seite }}</dd>
+      <dt>Beginn</dt><dd>{{ v.beginn|datum }}</dd>
+      <dt>Verordnung</dt><dd>{{ v.verordnung_datum|datum }} {{ v.verordnender_arzt or '' }}</dd>
+      <dt>Genehmigt</dt><dd>{{ v.genehmigt_datum|datum }}</dd>
+      <dt>Abgabe</dt><dd>{{ v.abgabe_datum|datum }}</dd>
+      <dt>Kostenträger</dt><dd>{{ kasse.name if kasse else '– (Selbstzahler)' }}{% if kasse %} <span class="leise">· Festbetrag {{ kasse.festbetrag|euro }}/Ohr</span>{% endif %}</dd>
+      <dt>Zuzahlung</dt><dd>{{ 'befreit' if v.zuzahlungsbefreit else 'pflichtig' }}</dd>
+    </dl>
+    {% if v.notiz %}<div class="notiz">{{ v.notiz }}</div>{% endif %}
+  </section>
+
+  <section class="karte">
+    <h2>Gerät hinzufügen</h2>
+    <form method="post" action="{{ url_for('versorgungen.geraet_hinzufuegen', vid=v.id) }}" class="raster">{{ csrf() }}
+      <div class="feld breit"><label>Artikel aus Stamm</label>
+        <select name="artikel_id"><option value="">– freie Eingabe –</option>
+          {% for a in hoergeraete %}<option value="{{ a.id }}">{{ a.kategorie }}: {{ a.hersteller or '' }} {{ a.bezeichnung }} ({{ a.preis|euro }}, Bestand {{ a.bestand }})</option>{% endfor %}
+        </select></div>
+      <div class="feld breit"><label>oder Bezeichnung</label><input name="bezeichnung"></div>
+      <div class="feld"><label>Seite</label><select name="seite"><option value="">–</option><option>rechts</option><option>links</option></select></div>
+      <div class="feld"><label>Seriennummer</label><input name="seriennummer"></div>
+      <div class="feld"><label>Preis (leer = Listenpreis)</label><input name="preis" inputmode="decimal"></div>
+      <div class="feld"><label>&nbsp;</label><button class="knopf primaer">Hinzufügen</button></div>
+    </form>
+  </section>
+</div>
+
+<section class="karte">
+  <h2>Geräte &amp; Kostenaufteilung</h2>
+  <div class="scroll">
+  <table class="tabelle">
+    <thead><tr><th>Gerät</th><th>Seite</th><th>Seriennummer</th><th class="rechts">Preis</th><th class="rechts">Kasse</th><th class="rechts">Zuzahlung</th><th class="rechts">Eigenanteil</th><th class="rechts">Kunde gesamt</th><th></th></tr></thead>
+    <tbody>
+    {% for z in b.zeilen %}{% set g = z.geraet %}
+      <tr><td>{{ g.bezeichnung }}{% if g.hilfsmittelnummer %}<br><small class="leise">HMV {{ g.hilfsmittelnummer }}</small>{% endif %}</td>
+        <td>{{ g.seite or '' }}</td>
+        <td><form method="post" action="{{ url_for('versorgungen.geraet_aendern', vid=v.id, gid=g.id) }}" class="inline">{{ csrf() }}
+          <input name="seriennummer" value="{{ g.seriennummer or '' }}" class="mittel" aria-label="Seriennummer"><button class="knopf klein">✓</button></form></td>
+        <td class="rechts">{{ z.preis|euro }}</td><td class="rechts">{{ z.kasse|euro }}</td><td class="rechts">{{ z.zuzahlung|euro }}</td>
+        <td class="rechts">{{ z.eigenanteil|euro }}</td><td class="rechts"><b>{{ z.kunde|euro }}</b></td>
+        <td><form method="post" action="{{ url_for('versorgungen.geraet_aendern', vid=v.id, gid=g.id) }}" class="inline" onsubmit="return confirm('Gerät entfernen?')">{{ csrf() }}
+          <button name="aktion" value="loeschen" class="knopf klein gefahr">×</button></form></td></tr>
+    {% else %}<tr><td colspan="9" class="leise">Noch keine Geräte erfasst.</td></tr>{% endfor %}
+    </tbody>
+    {% if b.zeilen %}
+    <tfoot><tr><th colspan="3">Summe</th><th class="rechts">{{ b.summe.preis|euro }}</th><th class="rechts">{{ b.summe.kasse|euro }}</th>
+      <th class="rechts">{{ b.summe.zuzahlung|euro }}</th><th class="rechts">{{ b.summe.eigenanteil|euro }}</th><th class="rechts">{{ b.summe.kunde|euro }}</th><th></th></tr></tfoot>
+    {% endif %}
+  </table>
+  </div>
+  {% if not b.gesetzlich %}<p class="leise">Kein gesetzlicher Kostenträger hinterlegt – der Kunde trägt den vollen Preis.</p>{% endif %}
+</section>
+
+<section class="karte">
+  <h2>Rechnungen</h2>
+  {% for r in rechnungen %}
+    <div class="zeile"><a href="{{ url_for('rechnungen.detail', rid=r.id) }}">{{ r.nummer }}</a> an {{ 'Kostenträger' if r.empfaenger == 'kasse' else 'Kunde' }} {{ status_marke(r.status) }}</div>
+  {% endfor %}
+  {% if not rechnungen|selectattr('status', 'ne', 'storniert')|list %}
+  <form method="post" action="{{ url_for('versorgungen.rechnungen_erzeugen', vid=v.id) }}">{{ csrf() }}
+    <button class="knopf primaer" {{ 'disabled' if not b.zeilen }}>Rechnungen erzeugen (Kunde + Kostenträger)</button></form>
+  {% endif %}
+</section>
+
+<details class="karte gefahrzone"><summary>Versorgung löschen</summary>
+  {{ loeschen(url_for('versorgungen.loeschen', vid=v.id), 'Versorgung endgültig löschen', 'Versorgung inkl. Geräteliste löschen?') }}
+</details>
+{% endblock %}

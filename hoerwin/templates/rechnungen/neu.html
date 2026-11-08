@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf %}
+{% block titel %}Verkauf{% endblock %}
+{% block inhalt %}
+<h1>Verkauf / freie Rechnung</h1>
+<p class="leise">Für Batterien, Zubehör, Pflegemittel, Gehörschutz und Dienstleistungen. Hörsystem-Versorgungen werden über die jeweilige Versorgung abgerechnet.</p>
+<form method="post" class="karte">
+  {{ csrf() }}
+  <div class="raster">
+    <div class="feld breit"><label>Kunde *</label>
+      <select name="kunde_id" required>{% for v, t in kunden %}<option value="{{ v }}" {{ 'selected' if v == kunde_id }}>{{ t }}</option>{% endfor %}</select></div>
+  </div>
+  <div class="scroll">
+  <table class="tabelle positionen">
+    <thead><tr><th>Artikel</th><th>oder freier Text</th><th>Menge</th><th>Einzelpreis brutto (leer = Listenpreis)</th></tr></thead>
+    <tbody>
+    {% for i in range(10) %}
+      <tr class="{{ 'versteckt' if i > 2 }}">
+        <td><select name="artikel_{{ i }}"><option value="">–</option>
+          {% for a in artikel %}<option value="{{ a.id }}">{{ a.kategorie }}: {{ a.hersteller or '' }} {{ a.bezeichnung }} – {{ a.preis|euro }}</option>{% endfor %}</select></td>
+        <td><input name="text_{{ i }}"></td>
+        <td><input name="menge_{{ i }}" value="1" class="klein" inputmode="decimal"></td>
+        <td><input name="preis_{{ i }}" class="mittel" inputmode="decimal"></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <button type="button" class="knopf klein" onclick="var z=document.querySelector('.positionen tr.versteckt'); if(z) z.classList.remove('versteckt')">+ weitere Zeile</button>
+  <div class="feld breit"><label>Notiz</label><input name="notiz"></div>
+  <label><input type="checkbox" name="bar" value="1"> Sofort bezahlt (bar/EC)</label>
+  <div class="aktionen"><button class="knopf primaer">Rechnung erstellen</button>
+    <a class="knopf" href="{{ url_for('rechnungen.liste') }}">Abbrechen</a></div>
+</form>
+{% endblock %}

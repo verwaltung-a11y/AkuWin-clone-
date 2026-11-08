@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf %}
+{% block titel %}Artikel &amp; Lager{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Artikel &amp; Lager</h1>
+  <div class="aktionen">
+    <form class="suche">
+      <select name="kategorie" onchange="this.form.submit()"><option value="">Alle Kategorien</option>
+        {% for k in kategorien %}<option {{ 'selected' if k == kat }}>{{ k }}</option>{% endfor %}</select>
+      <input name="q" value="{{ q }}" placeholder="Bezeichnung, Hersteller, Art.-Nr."><button class="knopf">Suchen</button>
+      <a class="knopf" href="{{ url_for('artikel.liste', knapp=1) }}">Nur knappe</a>
+    </form>
+    <a class="knopf primaer" href="{{ url_for('artikel.neu') }}">+ Neuer Artikel</a>
+  </div>
+</div>
+<div class="karte">
+<table class="tabelle">
+  <thead><tr><th>Kategorie</th><th>Hersteller</th><th>Bezeichnung</th><th>Bauform</th><th>Art.-Nr.</th><th class="rechts">Preis</th><th class="rechts">Bestand</th><th>Zu-/Abgang</th></tr></thead>
+  <tbody>
+  {% for a in rows %}
+    <tr class="{{ 'inaktiv' if not a.aktiv }}">
+      <td>{{ a.kategorie }}</td><td>{{ a.hersteller or '' }}</td>
+      <td><a href="{{ url_for('artikel.bearbeiten', aid=a.id) }}">{{ a.bezeichnung }}</a></td>
+      <td>{{ a.bauform or '' }}</td><td>{{ a.artikelnummer or '' }}</td>
+      <td class="rechts">{{ a.preis|euro }}</td>
+      <td class="rechts {{ 'rot' if a.mindestbestand and a.bestand <= a.mindestbestand }}">{% if a.kategorie != 'Dienstleistung' %}{{ a.bestand }}{% endif %}</td>
+      <td>{% if a.kategorie != 'Dienstleistung' %}
+        <form method="post" action="{{ url_for('artikel.bestand', aid=a.id) }}" class="inline">{{ csrf() }}
+          <input name="menge" class="klein" value="1" aria-label="Menge"><button class="knopf klein" title="Bestand ändern (negativ = Abgang)">±</button></form>{% endif %}</td>
+    </tr>
+  {% else %}<tr><td colspan="8" class="leise">Keine Artikel gefunden.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

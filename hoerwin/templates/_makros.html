@@ -1,0 +1,18 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro loeschen(url, text='Löschen', frage='Wirklich löschen?') %}
+<form method="post" action="{{ url }}" class="inline" onsubmit="return confirm('{{ frage }}')">
+  {{ csrf() }}<button class="knopf gefahr">{{ text }}</button>
+</form>
+{% endmacro %}
+
+{% macro status_marke(text) %}
+{% set klassen = {
+  'Abgeschlossen': 'gruen', 'bezahlt': 'gruen', 'Abgeholt': 'gruen', 'Zurück – abholbereit': 'gruen',
+  'Abgebrochen': 'grau', 'storniert': 'grau', 'Nicht reparabel': 'grau',
+  'offen': 'gelb', 'Kostenvoranschlag eingereicht': 'gelb', 'Beim Hersteller': 'gelb',
+  'Genehmigt': 'blau', 'Abgegeben': 'blau', 'Nachsorge': 'blau'} %}
+<span class="marke {{ klassen.get(text, '') }}">{{ text }}</span>
+{% endmacro %}
+
+{% macro kundenname(r) %}{{ r['nachname'] }}{% if r['vorname'] %}, {{ r['vorname'] }}{% endif %}{% endmacro %}

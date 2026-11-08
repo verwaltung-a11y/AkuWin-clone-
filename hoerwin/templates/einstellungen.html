@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf %}
+{% block titel %}Einstellungen{% endblock %}
+{% block inhalt %}
+<h1>Einstellungen</h1>
+<div class="spalten">
+  <form method="post" class="karte formular">{{ csrf() }}
+    <h3>Firmendaten (erscheinen auf Rechnungen und Kostenvoranschlägen)</h3>
+    <div class="raster">
+    {% for k, label in felder %}
+      <div class="feld {{ 'breit' if k in ('firma_bank', 'rechnung_fusstext', 'firma_name') }}">
+        <label for="{{ k }}">{{ label }}</label>
+        {% if k == 'rechnung_fusstext' %}<textarea id="{{ k }}" name="{{ k }}" rows="2">{{ werte[k] }}</textarea>
+        {% else %}<input id="{{ k }}" name="{{ k }}" value="{{ werte[k] }}">{% endif %}
+      </div>
+    {% endfor %}
+    </div>
+    <div class="aktionen"><button class="knopf primaer">Speichern</button></div>
+  </form>
+  <div>
+    <div class="karte">
+      <h3>Benutzerverwaltung</h3>
+      <p>Benutzer anlegen, löschen und Passwort ändern.</p>
+      <a class="knopf" href="{{ url_for('auth.benutzer') }}">Benutzer verwalten</a>
+    </div>
+    <div class="karte">
+      <h3>Datensicherung</h3>
+      <p>Lädt eine vollständige Kopie der Datenbank herunter. Bewahren Sie Sicherungen verschlüsselt auf – sie enthalten Gesundheitsdaten.</p>
+      <a class="knopf" href="{{ url_for('einstellungen.sicherung') }}">Sicherung herunterladen</a>
+    </div>
+    <div class="karte">
+      <h3>Export</h3>
+      <a class="knopf" href="{{ url_for('kunden.export') }}">Kundenliste als CSV</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

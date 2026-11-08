@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_makros.html" import status_marke, kundenname %}
+{% block titel %}Reparaturen{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Reparaturen {% if not alle %}<small class="leise">(offen)</small>{% endif %}</h1>
+  <div class="aktionen">
+    {% if alle %}<a class="knopf" href="{{ url_for('reparaturen.liste') }}">Nur offene</a>
+    {% else %}<a class="knopf" href="{{ url_for('reparaturen.liste', alle=1) }}">Alle anzeigen</a>{% endif %}
+    <a class="knopf primaer" href="{{ url_for('reparaturen.neu') }}">+ Neue Reparatur</a>
+  </div>
+</div>
+<div class="karte">
+<table class="tabelle">
+  <thead><tr><th>Eingang</th><th>Kunde</th><th>Gerät</th><th>SN</th><th>Fehler</th><th>Status</th><th class="rechts">Tage</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td><a href="{{ url_for('reparaturen.bearbeiten', rid=r.id) }}">{{ r.eingang|datum }}</a></td>
+      <td><a href="{{ url_for('kunden.detail', kid=r.kunde_id) }}">{{ kundenname(r) }}</a>{% if r.telefon %}<br><small class="leise">☎ {{ r.telefon }}</small>{% endif %}</td>
+      <td>{{ r.geraet }}{% if r.garantie %} <span class="marke blau">Garantie</span>{% endif %}</td><td>{{ r.seriennummer or '' }}</td>
+      <td>{{ (r.fehler or '')|truncate(60) }}</td><td>{{ status_marke(r.status) }}</td>
+      <td class="rechts">{{ r.eingang|tage_seit if r.status in offen else '' }}</td></tr>
+  {% else %}<tr><td colspan="7" class="leise">Keine Reparaturen.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

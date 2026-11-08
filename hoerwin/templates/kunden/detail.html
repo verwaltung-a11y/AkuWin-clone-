@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf, status_marke, loeschen %}
+{% block titel %}{{ k.nachname }}, {{ k.vorname }}{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>{{ k.anrede or '' }} {{ k.vorname or '' }} {{ k.nachname }} <small class="leise">Nr. {{ k.kundennummer }}</small></h1>
+  <div class="aktionen">
+    <a class="knopf" href="{{ url_for('kunden.bearbeiten', kid=k.id) }}">Bearbeiten</a>
+    <a class="knopf" href="{{ url_for('termine.neu', kunde=k.id) }}">+ Termin</a>
+    <a class="knopf" href="{{ url_for('kunden.audiogramm', kid=k.id) }}">+ Audiogramm</a>
+    <a class="knopf primaer" href="{{ url_for('versorgungen.neu', kunde=k.id) }}">+ Versorgung</a>
+    <a class="knopf" href="{{ url_for('rechnungen.neu', kunde=k.id) }}">+ Verkauf</a>
+    <a class="knopf" href="{{ url_for('reparaturen.neu', kunde=k.id) }}">+ Reparatur</a>
+  </div>
+</div>
+{% if not k.einwilligung_dsgvo %}<div class="meldung fehler">Für diesen Kunden ist keine DSGVO-Einwilligung hinterlegt.</div>{% endif %}
+
+<div class="spalten">
+  <section class="karte">
+    <h2>Stammdaten</h2>
+    <dl class="daten">
+      <dt>Geburtsdatum</dt><dd>{{ k.geburtsdatum|datum }}{% if alter is not none %} ({{ alter }} Jahre){% endif %}</dd>
+      <dt>Anschrift</dt><dd>{{ k.strasse or '' }}<br>{{ k.plz or '' }} {{ k.ort or '' }}</dd>
+      <dt>Telefon</dt><dd>{{ k.telefon or '' }}{% if k.mobil %}<br>{{ k.mobil }}{% endif %}</dd>
+      <dt>E-Mail</dt><dd>{% if k.email %}<a href="mailto:{{ k.email }}">{{ k.email }}</a>{% endif %}</dd>
+      <dt>Kostenträger</dt><dd>{{ k.kasse or '–' }}{% if k.kasse_art %} <span class="leise">({{ k.kasse_art }})</span>{% endif %}</dd>
+      <dt>Versichertennr.</dt><dd>{{ k.versichertennummer or '' }}</dd>
+      <dt>Zuzahlung</dt><dd>{{ 'befreit' if k.zuzahlungsbefreit else 'pflichtig' }}</dd>
+      <dt>HNO-Arzt</dt><dd>{{ k.hno_arzt or '' }}</dd>
+    </dl>
+    {% if k.notiz %}<div class="notiz">{{ k.notiz }}</div>{% endif %}
+  </section>
+
+  <section class="karte">
+    <h2>Audiogramme</h2>
+    {% if letztes_svg %}{{ letztes_svg|safe }}
+      <div class="legende"><span class="ag-r">○ rechts LL</span> <span class="ag-r">&lt; rechts KL</span> <span class="ag-l">× links LL</span> <span class="ag-l">&gt; links KL</span></div>
+    {% endif %}
+    <table class="tabelle">
+      <thead><tr><th>Datum</th><th>PTA4 rechts</th><th>PTA4 links</th><th></th></tr></thead>
+      <tbody>
+      {% for a in audiogramme %}
+        <tr><td><a href="{{ url_for('kunden.audiogramm', kid=k.id, aid=a.row.id) }}">{{ a.row.datum|datum }}</a></td>
+          {% for s in ('rechts', 'links') %}
+          <td>{% if a.auswertung[s].pta4 is not none %}{{ '%.0f'|format(a.auswertung[s].pta4) }} dB <span class="leise">{{ a.auswertung[s].grad }}</span>{% else %}–{% endif %}</td>
+          {% endfor %}
+          <td class="rechts">{{ loeschen(url_for('kunden.audiogramm_loeschen', kid=k.id, aid=a.row.id), '×', 'Audiogramm löschen?') }}</td></tr>
+      {% else %}<tr><td colspan="4" class="leise">Noch kein Audiogramm erfasst.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="karte">
+    <h2>Versorgungen</h2>
+    <table class="tabelle">
+      <thead><tr><th>Beginn</th><th>Seite</th><th>Geräte</th><th>Status</th><th>Abgabe</th></tr></thead>
+      <tbody>
+      {% for v in versorgungen %}
+        <tr><td><a href="{{ url_for('versorgungen.detail', vid=v.id) }}">{{ v.beginn|datum }}</a></td><td>{{ v.seite }}</td>
+          <td>{{ v.geraete }}</td><td>{{ status_marke(v.status) }}</td><td>{{ v.abgabe_datum|datum }}</td></tr>
+      {% else %}<tr><td colspan="5" class="leise">Keine Versorgungen.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="karte">
+    <h2>Termine</h2>
+    {% for t in termine %}
+      <div class="zeile {{ 'erledigt' if t.erledigt }}"><a href="{{ url_for('termine.bearbeiten', tid=t.id) }}">{{ t.beginn|datum }}</a> {{ t.art }} {% if t.notiz %}<span class="leise">– {{ t.notiz }}</span>{% endif %}</div>
+    {% else %}<p class="leise">Keine Termine.</p>{% endfor %}
+  </section>
+
+  <section class="karte">
+    <h2>Rechnungen</h2>
+    {% for r in rechnungen %}
+      <div class="zeile"><a href="{{ url_for('rechnungen.detail', rid=r.id) }}">{{ r.nummer }}</a> {{ r.datum|datum }}
+        – {{ (r.summe or 0)|euro }} {{ status_marke(r.status) }} {% if r.empfaenger == 'kasse' %}<span class="leise">(an Kasse)</span>{% endif %}</div>
+    {% else %}<p class="leise">Keine Rechnungen.</p>{% endfor %}
+  </section>
+
+  <section class="karte">
+    <h2>Reparaturen</h2>
+    {% for r in reparaturen %}
+      <div class="zeile"><a href="{{ url_for('reparaturen.bearbeiten', rid=r.id) }}">{{ r.eingang|datum }}</a> {{ r.geraet }} {{ status_marke(r.status) }}</div>
+    {% else %}<p class="leise">Keine Reparaturen.</p>{% endfor %}
+  </section>
+</div>
+
+<details class="karte gefahrzone">
+  <summary>Kunde löschen</summary>
+  <p>Löscht den Kunden mit allen Audiogrammen, Versorgungen, Terminen und Reparaturen unwiderruflich (z. B. auf Löschverlangen nach Art. 17 DSGVO – gesetzliche Aufbewahrungsfristen beachten!). Rechnungen bleiben erhalten.</p>
+  <form method="post" action="{{ url_for('kunden.loeschen', kid=k.id) }}">{{ csrf() }}
+    <label>Zur Bestätigung Nachnamen eingeben: <input name="bestaetigung" autocomplete="off"></label>
+    <button class="knopf gefahr">Endgültig löschen</button>
+  </form>
+</details>
+{% endblock %}

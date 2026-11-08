@@ -1,0 +1,4 @@
+{% extends "base.html" %}
+{% block inhalt %}
+<div class="karte"><h1>Nicht gefunden</h1><p>{{ meldung }}</p><a class="knopf" href="{{ url_for('dashboard.index') }}">Zur Übersicht</a></div>
+{% endblock %}

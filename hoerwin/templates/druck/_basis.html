@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <title>{% block titel %}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='druck.css') }}">
+</head>
+<body>
+<div class="werkzeug"><button onclick="window.print()">Drucken / als PDF speichern</button></div>
+<div class="blatt">
+  <header class="briefkopf">
+    <div class="absender-gross">
+      <b>{{ firma('firma_name') or 'Ihr Hörakustik-Fachgeschäft' }}</b><br>
+      {{ firma('firma_strasse') }}<br>{{ firma('firma_plz_ort') }}
+    </div>
+    <div class="kontakt">
+      {% if firma('firma_telefon') %}Tel. {{ firma('firma_telefon') }}<br>{% endif %}
+      {% if firma('firma_email') %}{{ firma('firma_email') }}<br>{% endif %}
+      {% if firma('firma_ik') %}IK {{ firma('firma_ik') }}{% endif %}
+    </div>
+  </header>
+  <div class="absenderzeile">{{ firma('firma_name') }} · {{ firma('firma_strasse') }} · {{ firma('firma_plz_ort') }}</div>
+  {% block inhalt %}{% endblock %}
+  <footer class="fuss">
+    {{ firma('firma_name') }}{% if firma('firma_inhaber') %} · Inh. {{ firma('firma_inhaber') }}{% endif %}
+    {% if firma('firma_steuernr') %} · St.-Nr./USt-IdNr. {{ firma('firma_steuernr') }}{% endif %}
+    {% if firma('firma_bank') %}<br>{{ firma('firma_bank') }}{% endif %}
+  </footer>
+</div>
+</body>
+</html>

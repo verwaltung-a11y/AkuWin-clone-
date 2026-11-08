@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titel %}Einrichtung{% endblock %}
+{% block inhalt %}
+<div class="anmelden karte">
+  <div class="logo gross">Hör<b>Win</b></div>
+  <h2>Ersteinrichtung</h2>
+  <p class="leise">Legen Sie den ersten Benutzer an. Weitere Benutzer und die Firmendaten können Sie später unter ⚙ Einstellungen pflegen.</p>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="feld"><label>Name des Fachgeschäfts</label><input name="firma_name" placeholder="z. B. Hörakustik Muster"></div>
+    <div class="feld"><label>Ihr Name</label><input name="anzeigename"></div>
+    <div class="feld"><label>Benutzername *</label><input name="benutzername" required autocomplete="username"></div>
+    <div class="feld"><label>Passwort * (mind. 8 Zeichen)</label><input type="password" name="passwort" minlength="8" required autocomplete="new-password"></div>
+    <div class="feld"><label>Passwort wiederholen *</label><input type="password" name="passwort2" minlength="8" required autocomplete="new-password"></div>
+    <button class="knopf primaer voll">Einrichten</button>
+  </form>
+</div>
+{% endblock %}

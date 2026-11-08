@@ -1,0 +1,32 @@
+@page { size: A4; margin: 18mm 18mm 20mm 22mm; }
+* { box-sizing: border-box; }
+body { font: 10.5pt/1.45 "Helvetica Neue", Arial, sans-serif; color: #111; background: #e9ecef; margin: 0; }
+.werkzeug { text-align: center; padding: 12px; }
+.werkzeug button { font: inherit; padding: 8px 18px; border-radius: 6px; border: 1px solid #0b6e74; background: #0b6e74; color: #fff; cursor: pointer; }
+.blatt { background: #fff; width: 210mm; min-height: 297mm; margin: 0 auto 24px; padding: 18mm 18mm 20mm 22mm; position: relative; }
+.briefkopf { display: flex; justify-content: space-between; border-bottom: 2px solid #0b6e74; padding-bottom: 6mm; }
+.absender-gross b { font-size: 15pt; color: #0b6e74; }
+.kontakt { text-align: right; font-size: 9pt; }
+.absenderzeile { font-size: 7.5pt; color: #555; margin-top: 12mm; text-decoration: underline; }
+.anschrift { min-height: 30mm; margin-top: 2mm; }
+.meta { display: flex; justify-content: flex-end; margin-top: -26mm; }
+.meta td { padding: 0 0 0 6mm; font-size: 9.5pt; }
+.meta td:first-child { color: #555; }
+h1 { font-size: 14pt; margin: 14mm 0 4mm; }
+table.posten { width: 100%; border-collapse: collapse; margin: 4mm 0; }
+.posten th { text-align: left; border-bottom: 1px solid #333; font-size: 9pt; padding: 2mm 1mm; }
+.posten td { padding: 1.6mm 1mm; border-bottom: 1px solid #ddd; vertical-align: top; }
+.posten tfoot td { border: none; }
+.posten .summe td { font-weight: bold; border-top: 2px solid #333; }
+.r { text-align: right; white-space: nowrap; }
+.klein { font-size: 8.5pt; color: #555; }
+.erklaerung { border: 1px solid #999; padding: 4mm; margin-top: 6mm; }
+.unterschriften { display: flex; gap: 20mm; margin-top: 16mm; }
+.unterschriften span { flex: 1; border-top: 1px solid #333; padding-top: 1mm; font-size: 8.5pt; color: #555; }
+.fuss { position: absolute; bottom: 10mm; left: 22mm; right: 18mm; font-size: 7.5pt; color: #555; border-top: 1px solid #ccc; padding-top: 2mm; text-align: center; }
+@media print {
+  body { background: #fff; }
+  .werkzeug { display: none; }
+  .blatt { width: auto; min-height: 0; margin: 0; padding: 0; }
+  .fuss { position: fixed; bottom: 0; left: 0; right: 0; }
+}

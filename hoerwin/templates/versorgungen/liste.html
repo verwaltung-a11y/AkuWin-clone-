@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_makros.html" import status_marke, kundenname %}
+{% block titel %}Versorgungen{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Hörsystem-Versorgungen</h1>
+  <div class="aktionen">
+    <form class="suche"><select name="status" onchange="this.form.submit()">
+      <option value="offen" {{ 'selected' if status == 'offen' }}>Laufende</option>
+      <option value="alle" {{ 'selected' if status == 'alle' }}>Alle</option>
+      {% for s in alle_status %}<option {{ 'selected' if s == status }}>{{ s }}</option>{% endfor %}
+    </select></form>
+    <a class="knopf primaer" href="{{ url_for('versorgungen.neu') }}">+ Neue Versorgung</a>
+  </div>
+</div>
+<div class="karte">
+<table class="tabelle">
+  <thead><tr><th>Beginn</th><th>Kunde</th><th>Seite</th><th>Geräte</th><th>Status</th><th>Abgabe</th></tr></thead>
+  <tbody>
+  {% for v in rows %}
+    <tr><td><a href="{{ url_for('versorgungen.detail', vid=v.id) }}">{{ v.beginn|datum }}</a></td>
+      <td><a href="{{ url_for('kunden.detail', kid=v.kunde_id) }}">{{ kundenname(v) }}</a></td>
+      <td>{{ v.seite }}</td><td>{{ v.geraete }}</td><td>{{ status_marke(v.status) }}</td><td>{{ v.abgabe_datum|datum }}</td></tr>
+  {% else %}<tr><td colspan="6" class="leise">Keine Versorgungen.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

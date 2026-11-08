@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_makros.html" import loeschen %}
+{% block titel %}Kostenträger{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Krankenkassen &amp; Kostenträger</h1>
+  <div class="aktionen">
+    <form class="suche"><input name="q" value="{{ q }}" placeholder="Name oder IK"><button class="knopf">Suchen</button></form>
+    <a class="knopf primaer" href="{{ url_for('kassen.neu') }}">+ Neuer Kostenträger</a>
+  </div>
+</div>
+<div class="karte">
+<table class="tabelle">
+  <thead><tr><th>Name</th><th>IK-Nummer</th><th>Art</th><th class="rechts">Festbetrag/Ohr</th><th class="rechts">Kunden</th><th></th></tr></thead>
+  <tbody>
+  {% for k in rows %}
+    <tr><td><a href="{{ url_for('kassen.bearbeiten', kid=k.id) }}">{{ k.name }}</a></td><td>{{ k.ik_nummer or '' }}</td>
+      <td>{{ k.art }}</td><td class="rechts">{{ k.festbetrag|euro }}</td><td class="rechts">{{ k.anzahl }}</td>
+      <td class="rechts">{{ loeschen(url_for('kassen.loeschen', kid=k.id), '×', 'Kostenträger löschen? Zugeordnete Kunden verlieren die Zuordnung.') }}</td></tr>
+  {% else %}<tr><td colspan="6" class="leise">Noch keine Kostenträger angelegt.</td></tr>{% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

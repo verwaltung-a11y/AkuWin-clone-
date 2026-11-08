@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% from "_makros.html" import status_marke, kundenname %}
+{% block titel %}Rechnungen{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Rechnungen</h1>
+  <div class="aktionen">
+    <form class="suche"><select name="status" onchange="this.form.submit()">
+      {% for s, t in [('offen', 'Offene'), ('bezahlt', 'Bezahlte'), ('storniert', 'Stornierte'), ('alle', 'Alle')] %}
+        <option value="{{ s }}" {{ 'selected' if s == status }}>{{ t }}</option>{% endfor %}
+    </select></form>
+    <a class="knopf primaer" href="{{ url_for('rechnungen.neu') }}">+ Verkauf / Rechnung</a>
+  </div>
+</div>
+<div class="karte">
+<table class="tabelle">
+  <thead><tr><th>Nummer</th><th>Datum</th><th>Empfänger</th><th>Fällig</th><th>Status</th><th class="rechts">Betrag</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td><a href="{{ url_for('rechnungen.detail', rid=r.id) }}">{{ r.nummer }}</a></td><td>{{ r.datum|datum }}</td>
+      <td>{% if r.empfaenger == 'kasse' %}{{ r.kasse }} <span class="leise">für {{ kundenname(r) }}</span>{% else %}{{ kundenname(r) if r.nachname else '–' }}{% endif %}</td>
+      <td class="{{ 'rot' if r.status == 'offen' and r.faellig_am and r.faellig_am < heute }}">{{ r.faellig_am|datum }}</td>
+      <td>{{ status_marke(r.status) }}</td><td class="rechts">{{ r.summe|euro }}</td></tr>
+  {% else %}<tr><td colspan="6" class="leise">Keine Rechnungen.</td></tr>{% endfor %}
+  </tbody>
+  {% if rows %}<tfoot><tr><th colspan="5">Summe</th><th class="rechts">{{ gesamt|euro }}</th></tr></tfoot>{% endif %}
+</table>
+</div>
+{% endblock %}

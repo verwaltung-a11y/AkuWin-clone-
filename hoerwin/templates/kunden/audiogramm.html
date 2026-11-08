@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf %}
+{% block titel %}Audiogramm{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Tonaudiogramm – <a href="{{ url_for('kunden.detail', kid=k.id) }}">{{ k.vorname or '' }} {{ k.nachname }}</a></h1>
+</div>
+<div class="spalten">
+<form method="post" class="karte">
+  {{ csrf() }}
+  <div class="raster">
+    <div class="feld"><label>Messdatum *</label><input type="date" name="datum" value="{{ form.datum if form else (row.datum if row else heute) }}" required></div>
+    <div class="feld"><label>Sprachverstehen rechts (% bei 65 dB)</label><input name="sprachverstehen_r" inputmode="numeric" value="{{ form.sprachverstehen_r if form else (row.sprachverstehen_r if row and row.sprachverstehen_r is not none else '') }}"></div>
+    <div class="feld"><label>Sprachverstehen links (% bei 65 dB)</label><input name="sprachverstehen_l" inputmode="numeric" value="{{ form.sprachverstehen_l if form else (row.sprachverstehen_l if row and row.sprachverstehen_l is not none else '') }}"></div>
+  </div>
+  <p class="leise">Hörschwellen in dB HL (−10 bis 120). Leere Felder werden nicht gemessen.</p>
+  <div class="scroll">
+  <table class="tabelle audiogramm-eingabe">
+    <thead><tr><th></th>{% for f in frequenzen %}<th>{{ f }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for kurve, label in kurven.items() %}
+      <tr class="{{ 'ag-r' if kurve.startswith('r') else 'ag-l' }}"><th>{{ label }}</th>
+      {% for f in frequenzen %}
+        {% set name = kurve ~ '_' ~ f %}
+        {% set w = form.get(name) if form else (werte[kurve].get(f)|zahl if werte[kurve].get(f) is not none else '') %}
+        <td><input name="{{ name }}" value="{{ w }}" inputmode="numeric" aria-label="{{ label }} {{ f }} Hz"></td>
+      {% endfor %}</tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div class="feld breit"><label>Bemerkung</label><textarea name="bemerkung" rows="2">{{ form.bemerkung if form else (row.bemerkung or '' if row else '') }}</textarea></div>
+  <div class="aktionen"><button class="knopf primaer">Speichern</button>
+    <a class="knopf" href="{{ url_for('kunden.detail', kid=k.id) }}">Abbrechen</a></div>
+</form>
+{% if svg %}
+<div class="karte">
+  {{ svg|safe }}
+  <div class="legende"><span class="ag-r">○ rechts LL</span> <span class="ag-r">&lt; rechts KL</span> <span class="ag-l">× links LL</span> <span class="ag-l">&gt; links KL</span></div>
+  <dl class="daten">
+    <dt>PTA4 rechts</dt><dd>{% if auswertung.rechts.pta4 is not none %}{{ '%.1f'|format(auswertung.rechts.pta4) }} dB HL – {{ auswertung.rechts.grad }}{% else %}–{% endif %}</dd>
+    <dt>PTA4 links</dt><dd>{% if auswertung.links.pta4 is not none %}{{ '%.1f'|format(auswertung.links.pta4) }} dB HL – {{ auswertung.links.grad }}{% else %}–{% endif %}</dd>
+  </dl>
+  <p class="leise">PTA4 = Mittelwert der Luftleitung bei 0,5/1/2/4 kHz, Einteilung nach WHO.</p>
+</div>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf %}
+{% block titel %}Benutzer{% endblock %}
+{% block inhalt %}
+<h1>Benutzer</h1>
+<div class="spalten">
+  <div class="karte">
+    <table class="tabelle">
+      <thead><tr><th>Benutzername</th><th>Name</th><th>Angelegt</th><th></th></tr></thead>
+      <tbody>
+      {% for u in liste %}
+        <tr><td>{{ u.benutzername }}</td><td>{{ u.name }}</td><td>{{ u.erstellt[:10]|datum }}</td>
+        <td class="rechts">{% if u.id != g.benutzer.id %}
+          <form method="post" class="inline" onsubmit="return confirm('Benutzer löschen?')">{{ csrf() }}
+            <input type="hidden" name="aktion" value="loeschen"><input type="hidden" name="id" value="{{ u.id }}">
+            <button class="knopf klein gefahr">Löschen</button></form>{% else %}<span class="leise">(Sie)</span>{% endif %}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div>
+    <form method="post" class="karte">{{ csrf() }}<input type="hidden" name="aktion" value="neu">
+      <h3>Neuer Benutzer</h3>
+      <div class="feld"><label>Benutzername</label><input name="benutzername" required></div>
+      <div class="feld"><label>Anzeigename</label><input name="anzeigename"></div>
+      <div class="feld"><label>Passwort (mind. 8 Zeichen)</label><input type="password" name="passwort" minlength="8" required autocomplete="new-password"></div>
+      <button class="knopf primaer">Anlegen</button>
+    </form>
+    <form method="post" class="karte">{{ csrf() }}<input type="hidden" name="aktion" value="passwort">
+      <h3>Eigenes Passwort ändern</h3>
+      <div class="feld"><label>Bisheriges Passwort</label><input type="password" name="alt" required autocomplete="current-password"></div>
+      <div class="feld"><label>Neues Passwort</label><input type="password" name="neu" minlength="8" required autocomplete="new-password"></div>
+      <button class="knopf">Ändern</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

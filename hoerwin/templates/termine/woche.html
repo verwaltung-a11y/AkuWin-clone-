@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf, kundenname %}
+{% block titel %}Termine{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Termine – Woche ab {{ montag.strftime('%d.%m.%Y') }}</h1>
+  <div class="aktionen">
+    <a class="knopf" href="{{ url_for('termine.woche', ab=zurueck) }}">◀</a>
+    <a class="knopf" href="{{ url_for('termine.woche') }}">Heute</a>
+    <a class="knopf" href="{{ url_for('termine.woche', ab=vor) }}">▶</a>
+    <a class="knopf primaer" href="{{ url_for('termine.neu') }}">+ Termin</a>
+  </div>
+</div>
+<div class="woche">
+  {% for t in tage %}
+  <section class="karte tag {{ 'heute' if t.datum.isoformat() == heute }}">
+    <h3>{{ t.name }} <span class="leise">{{ t.datum.strftime('%d.%m.') }}</span>
+      <a class="plus" href="{{ url_for('termine.neu', tag=t.datum.isoformat()) }}" title="Termin anlegen">+</a></h3>
+    {% for x in t.termine %}
+      <div class="termin {{ 'erledigt' if x.erledigt }}">
+        <a href="{{ url_for('termine.bearbeiten', tid=x.id) }}"><b>{{ x.beginn|uhrzeit }}</b> {{ x.art }}</a>
+        <span class="leise">{{ x.dauer_min }} min</span><br>
+        {% if x.kunde_id %}<a href="{{ url_for('kunden.detail', kid=x.kunde_id) }}">{{ kundenname(x) }}</a>{% endif %}
+        {% if x.notiz %}<div class="leise">{{ x.notiz }}</div>{% endif %}
+        <form method="post" action="{{ url_for('termine.erledigt', tid=x.id) }}">{{ csrf() }}
+          <button class="link klein">{{ '↺ wieder offen' if x.erledigt else '✓ erledigt' }}</button></form>
+      </div>
+    {% else %}<p class="leise">–</p>{% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

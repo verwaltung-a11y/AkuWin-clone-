@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf %}
+{% block titel %}{{ titel }}{% endblock %}
+{% block inhalt %}
+<h1>{{ titel }}</h1>
+<form method="post" class="formular karte">
+  {{ csrf() }}
+  <div class="raster">
+  {% for f in felder %}
+    {% set wert = werte.get(f.name) %}
+    <div class="feld {{ 'breit' if f.breit or f.art == 'textarea' }} {{ 'check' if f.art == 'check' }}">
+    {% if f.art == 'check' %}
+      <label><input type="checkbox" name="{{ f.name }}" value="1" {{ 'checked' if wert and wert != '0' }}> {{ f.label }}</label>
+    {% else %}
+      <label for="f_{{ f.name }}">{{ f.label }}{% if f.pflicht %} *{% endif %}</label>
+      {% if f.art == 'textarea' %}
+        <textarea id="f_{{ f.name }}" name="{{ f.name }}" rows="3">{{ wert or '' }}</textarea>
+      {% elif f.art == 'select' %}
+        <select id="f_{{ f.name }}" name="{{ f.name }}" {{ 'required' if f.pflicht }}>
+          {% for v, t in f.optionen_liste() %}
+            <option value="{{ v }}" {{ 'selected' if (v|norm) == (wert|norm) }}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      {% elif f.art in ('money', 'number') %}
+        <input id="f_{{ f.name }}" name="{{ f.name }}" inputmode="decimal" value="{{ wert|zahl if wert is number else (wert or '') }}" {{ 'required' if f.pflicht }}>
+      {% else %}
+        <input id="f_{{ f.name }}" type="{{ f.art }}" name="{{ f.name }}" value="{{ wert or '' }}" {{ 'required' if f.pflicht }}>
+      {% endif %}
+    {% endif %}
+    {% if f.hilfe %}<small>{{ f.hilfe }}</small>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+  <div class="aktionen">
+    <button class="knopf primaer">Speichern</button>
+    {% if abbrechen %}<a class="knopf" href="{{ abbrechen }}">Abbrechen</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

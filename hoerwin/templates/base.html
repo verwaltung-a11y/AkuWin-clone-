@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titel %}HörWin{% endblock %} · {{ firma('firma_name') or 'HörWin' }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+{% if g.benutzer %}
+<header class="kopf">
+  <a class="logo" href="{{ url_for('dashboard.index') }}">Hör<b>Win</b></a>
+  <nav>
+    {% set ep = request.endpoint or '' %}
+    <a href="{{ url_for('dashboard.index') }}" class="{{ 'aktiv' if ep.startswith('dashboard') }}">Übersicht</a>
+    <a href="{{ url_for('kunden.liste') }}" class="{{ 'aktiv' if ep.startswith('kunden') }}">Kunden</a>
+    <a href="{{ url_for('termine.woche') }}" class="{{ 'aktiv' if ep.startswith('termine') }}">Termine</a>
+    <a href="{{ url_for('versorgungen.liste') }}" class="{{ 'aktiv' if ep.startswith('versorgungen') }}">Versorgungen</a>
+    <a href="{{ url_for('rechnungen.liste') }}" class="{{ 'aktiv' if ep.startswith('rechnungen') }}">Rechnungen</a>
+    <a href="{{ url_for('reparaturen.liste') }}" class="{{ 'aktiv' if ep.startswith('reparaturen') }}">Reparaturen</a>
+    <a href="{{ url_for('artikel.liste') }}" class="{{ 'aktiv' if ep.startswith('artikel') }}">Artikel &amp; Lager</a>
+    <a href="{{ url_for('kassen.liste') }}" class="{{ 'aktiv' if ep.startswith('kassen') }}">Kostenträger</a>
+  </nav>
+  <div class="benutzer">
+    <form class="suche-schnell" action="{{ url_for('kunden.liste') }}"><input name="q" placeholder="Kunde suchen…" aria-label="Kunde suchen"></form>
+    <a href="{{ url_for('einstellungen.index') }}" title="Einstellungen">⚙</a>
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="link" title="Abmelden">{{ g.benutzer['name'] }} ⎋</button>
+    </form>
+  </div>
+</header>
+{% endif %}
+<main>
+  {% with nachrichten = get_flashed_messages(with_categories=true) %}
+    {% for kat, text in nachrichten %}<div class="meldung {{ kat }}">{{ text }}</div>{% endfor %}
+  {% endwith %}
+  {% block inhalt %}{% endblock %}
+</main>
+</body>
+</html>

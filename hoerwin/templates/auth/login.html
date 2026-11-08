@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block titel %}Anmelden{% endblock %}
+{% block inhalt %}
+<div class="anmelden karte">
+  <div class="logo gross">Hör<b>Win</b></div>
+  <p class="leise">{{ firma('firma_name') }}</p>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="feld"><label for="b">Benutzername</label><input id="b" name="benutzername" autofocus required autocomplete="username"></div>
+    <div class="feld"><label for="p">Passwort</label><input id="p" type="password" name="passwort" required autocomplete="current-password"></div>
+    <button class="knopf primaer voll">Anmelden</button>
+  </form>
+</div>
+{% endblock %}

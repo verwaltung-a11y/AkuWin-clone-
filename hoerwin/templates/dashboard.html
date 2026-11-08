@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% from "_makros.html" import status_marke, kundenname %}
+{% block titel %}Übersicht{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Guten Tag{% if g.benutzer['name'] %}, {{ g.benutzer['name'] }}{% endif %}</h1>
+  <div class="aktionen">
+    <a class="knopf primaer" href="{{ url_for('kunden.neu') }}">+ Kunde</a>
+    <a class="knopf" href="{{ url_for('termine.neu') }}">+ Termin</a>
+    <a class="knopf" href="{{ url_for('rechnungen.neu') }}">+ Verkauf</a>
+    <a class="knopf" href="{{ url_for('reparaturen.neu') }}">+ Reparatur</a>
+  </div>
+</div>
+
+<div class="kennzahlen">
+  <a class="kennzahl" href="{{ url_for('termine.woche') }}"><span>{{ termine_heute|length }}</span>Termine heute</a>
+  <a class="kennzahl" href="{{ url_for('versorgungen.liste') }}"><span>{{ versorgungen|length }}</span>laufende Versorgungen</a>
+  <a class="kennzahl" href="{{ url_for('rechnungen.liste') }}"><span>{{ offen_summe|euro }}</span>offene Forderungen{% if ueberfaellig %} · <b class="rot">{{ ueberfaellig|length }} überfällig</b>{% endif %}</a>
+  <a class="kennzahl" href="{{ url_for('reparaturen.liste') }}"><span>{{ reparaturen|length }}</span>offene Reparaturen</a>
+  <a class="kennzahl" href="{{ url_for('kunden.liste') }}"><span>{{ anzahl_kunden }}</span>Kunden</a>
+</div>
+
+<div class="spalten">
+  <section class="karte">
+    <h2>Termine heute</h2>
+    {% for t in termine_heute %}
+      <div class="zeile {{ 'erledigt' if t.erledigt }}">
+        <b>{{ t.beginn|uhrzeit }}</b> {{ t.art }} –
+        {% if t.kunde_id %}<a href="{{ url_for('kunden.detail', kid=t.kunde_id) }}">{{ kundenname(t) }}</a>{% else %}<i>ohne Kunde</i>{% endif %}
+        {% if t.telefon %}<span class="leise">☎ {{ t.telefon }}</span>{% endif %}
+        {% if t.notiz %}<div class="leise">{{ t.notiz }}</div>{% endif %}
+      </div>
+    {% else %}<p class="leise">Keine Termine heute.</p>{% endfor %}
+    {% if termine_bald %}
+      <h3>Nächste 7 Tage</h3>
+      {% for t in termine_bald %}
+        <div class="zeile"><b>{{ t.beginn|datum }}</b> {{ t.art }}{% if t.kunde_id %} – {{ kundenname(t) }}{% endif %}</div>
+      {% endfor %}
+    {% endif %}
+  </section>
+
+  <section class="karte">
+    <h2>Laufende Versorgungen</h2>
+    {% for v in versorgungen %}
+      <div class="zeile"><a href="{{ url_for('versorgungen.detail', vid=v.id) }}">{{ kundenname(v) }}</a>
+        {{ status_marke(v.status) }} <span class="leise">seit {{ v.beginn|datum }}</span></div>
+    {% else %}<p class="leise">Keine laufenden Versorgungen.</p>{% endfor %}
+  </section>
+
+  {% if ueberfaellig %}
+  <section class="karte warnung">
+    <h2>Überfällige Rechnungen</h2>
+    {% for r in ueberfaellig %}
+      <div class="zeile"><a href="{{ url_for('rechnungen.detail', rid=r.id) }}">{{ r.nummer }}</a>
+        {{ r.kasse if r.empfaenger == 'kasse' else kundenname(r) }} – {{ r.summe|euro }}
+        <span class="leise">fällig {{ r.faellig_am|datum }}</span></div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  <section class="karte">
+    <h2>Offene Reparaturen</h2>
+    {% for r in reparaturen %}
+      <div class="zeile"><a href="{{ url_for('reparaturen.bearbeiten', rid=r.id) }}">{{ r.geraet }}</a> – {{ kundenname(r) }}
+        {{ status_marke(r.status) }}</div>
+    {% else %}<p class="leise">Keine offenen Reparaturen.</p>{% endfor %}
+  </section>
+
+  {% if lager %}
+  <section class="karte warnung">
+    <h2>Mindestbestand unterschritten</h2>
+    {% for a in lager %}
+      <div class="zeile"><a href="{{ url_for('artikel.bearbeiten', aid=a.id) }}">{{ a.hersteller or '' }} {{ a.bezeichnung }}</a>
+        – Bestand <b>{{ a.bestand }}</b> (min. {{ a.mindestbestand }})</div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if folgeversorgung %}
+  <section class="karte">
+    <h2>Folgeversorgung möglich</h2>
+    <p class="leise">Letzte Abgabe liegt {{ jahre }} Jahre oder länger zurück.</p>
+    {% for k in folgeversorgung %}
+      <div class="zeile"><a href="{{ url_for('kunden.detail', kid=k.id) }}">{{ kundenname(k) }}</a>
+        <span class="leise">Abgabe {{ k.letzte|datum }}{% if k.telefon %} · ☎ {{ k.telefon }}{% endif %}</span></div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if geburtstage %}
+  <section class="karte">
+    <h2>🎂 Geburtstage heute</h2>
+    {% for k in geburtstage %}<div class="zeile"><a href="{{ url_for('kunden.detail', kid=k.id) }}">{{ kundenname(k) }}</a></div>{% endfor %}
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

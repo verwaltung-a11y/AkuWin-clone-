@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_makros.html" import csrf, status_marke %}
+{% block titel %}Rechnung {{ r.nummer }}{% endblock %}
+{% block inhalt %}
+<div class="titelzeile">
+  <h1>Rechnung {{ r.nummer }} {{ status_marke(r.status) }}</h1>
+  <div class="aktionen">
+    <a class="knopf primaer" href="{{ url_for('rechnungen.druck', rid=r.id) }}" target="_blank">Drucken / PDF</a>
+    {% if r.status == 'offen' %}
+      <form method="post" action="{{ url_for('rechnungen.status', rid=r.id) }}" class="inline">{{ csrf() }}
+        <input type="date" name="bezahlt_am" value="{{ heute }}" aria-label="Zahlungsdatum">
+        <button name="status" value="bezahlt" class="knopf">Als bezahlt markieren</button></form>
+    {% elif r.status == 'bezahlt' %}
+      <form method="post" action="{{ url_for('rechnungen.status', rid=r.id) }}" class="inline">{{ csrf() }}
+        <button name="status" value="offen" class="knopf">Zahlung zurücknehmen</button></form>
+    {% endif %}
+    {% if r.status != 'storniert' %}
+      <form method="post" action="{{ url_for('rechnungen.status', rid=r.id) }}" class="inline" onsubmit="return confirm('Rechnung stornieren?')">{{ csrf() }}
+        <button name="status" value="storniert" class="knopf gefahr">Stornieren</button></form>
+    {% endif %}
+  </div>
+</div>
+<div class="spalten">
+  <section class="karte">
+    <dl class="daten">
+      <dt>Empfänger</dt><dd>{% if r.empfaenger == 'kasse' %}{{ r.kasse }} (IK {{ r.ik_nummer or '–' }})<br><span class="leise">Versicherte/r: {{ r.vorname }} {{ r.nachname }}</span>{% else %}{{ r.vorname or '' }} {{ r.nachname or '–' }}{% endif %}</dd>
+      <dt>Datum</dt><dd>{{ r.datum|datum }}</dd>
+      <dt>Fällig</dt><dd>{{ r.faellig_am|datum }}</dd>
+      {% if r.bezahlt_am %}<dt>Bezahlt am</dt><dd>{{ r.bezahlt_am|datum }}</dd>{% endif %}
+      {% if r.kunde_id %}<dt>Kunde</dt><dd><a href="{{ url_for('kunden.detail', kid=r.kunde_id) }}">Kundenakte öffnen</a></dd>{% endif %}
+      {% if r.versorgung_id %}<dt>Versorgung</dt><dd><a href="{{ url_for('versorgungen.detail', vid=r.versorgung_id) }}">zur Versorgung</a></dd>{% endif %}
+    </dl>
+    {% if r.notiz %}<div class="notiz">{{ r.notiz }}</div>{% endif %}
+  </section>
+</div>
+<section class="karte">
+  <table class="tabelle">
+    <thead><tr><th>Pos.</th><th>Bezeichnung</th><th class="rechts">Menge</th><th class="rechts">Einzelpreis</th><th class="rechts">MwSt.</th><th class="rechts">Gesamt</th></tr></thead>
+    <tbody>
+    {% for p in pos %}
+      <tr><td>{{ loop.index }}</td><td>{{ p.bezeichnung }}</td><td class="rechts">{{ p.menge|zahl }}</td>
+        <td class="rechts">{{ p.einzelpreis|euro }}</td><td class="rechts">{{ p.mwst|zahl }} %</td><td class="rechts">{{ (p.menge * p.einzelpreis)|euro }}</td></tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><td colspan="5" class="rechts">Netto</td><td class="rechts">{{ s.netto|euro }}</td></tr>
+      {% for satz, betrag in s.steuern.items() %}<tr><td colspan="5" class="rechts">enth. MwSt. {{ satz|zahl }} %</td><td class="rechts">{{ betrag|euro }}</td></tr>{% endfor %}
+      <tr><th colspan="5" class="rechts">Gesamtbetrag</th><th class="rechts">{{ s.brutto|euro }}</th></tr>
+    </tfoot>
+  </table>
+</section>
+{% endblock %}
